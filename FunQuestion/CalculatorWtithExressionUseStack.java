@@ -3,13 +3,16 @@ package dataStructureAndAlgorithm;
 public class CalculatorWtithExressionUseStack {
 
 	public static void main(String[] args) {
-		String expression = "7+2*6-2";
+		String expression = "7-2*3+1";
 		
 		ArrayStackForCal numStack = new ArrayStackForCal(10);
 		ArrayStackForCal operStack = new ArrayStackForCal(10);
 		
 		int index = 0, right = 0, left=0, oper=0, result = 0;
 		char ch = ' ';
+		StringBuilder numKeep = new StringBuilder(); // 處理多位數拼接
+		// 處理負號 1-2-3 => 1+(-2)+(-3), Stack特性最後由右至左計算, 符號為 "-" 結果出錯
+		boolean transferFlag = false; 
 		
 		while(index < expression.length()) {
 			ch = expression.charAt(index);
@@ -24,17 +27,51 @@ public class CalculatorWtithExressionUseStack {
 						result = cal(right, left, oper);
 						numStack.push(result);
 						// 此次的符號入棧
-						operStack.push(ch);
+						if (ch == '-') {
+							operStack.push('+');
+							transferFlag = true;
+						}else {
+							operStack.push(ch);
+						}
 					} else {
-						operStack.push(ch);
+						if (ch == '-') {
+							operStack.push('+');
+							transferFlag = true;
+						}else {
+							operStack.push(ch);
+						}
 					}
 				}else {
-					operStack.push(ch); 
+					if (ch == '-') {
+						operStack.push('+');
+						transferFlag = true;
+					}else {
+						operStack.push(ch);
+					}
 				}
 			}else {
-				numStack.push(Integer.valueOf(String.valueOf(ch))); // *char 須轉數字
+//				numStack.push(Integer.valueOf(String.valueOf(ch))); // *char 須轉數字(僅個位數用)
+				
+				// 處理多位數
+				numKeep.append(ch);
+				
+				if (index == expression.length()-1) { // 最後數字直接入棧
+					if (transferFlag) {
+						numKeep.insert(0, "-");
+					}
+					numStack.push(Integer.valueOf(numKeep.toString()));
+					transferFlag = false;
+				}else {
+					if(isOper(expression.charAt(index+1))) {
+						if (transferFlag) {
+							numKeep.insert(0, "-");
+						}
+						numStack.push(Integer.valueOf(numKeep.toString()));
+						numKeep.delete(0, numKeep.length()); // 清空
+						transferFlag = false;
+					}
+				} 
 			}
-			
 			index++; // 遍歷指針
 		}
 		
@@ -49,7 +86,7 @@ public class CalculatorWtithExressionUseStack {
 		
 		System.out.printf("Expression %s = %d \n", expression, numStack.pop());
 	}
-
+	
 	// 運算符號優先級數字表示
 	public static int priority(int oper) {
 		if (oper == '*' || oper == '/') {
