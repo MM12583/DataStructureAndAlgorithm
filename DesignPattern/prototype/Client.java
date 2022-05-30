@@ -9,10 +9,12 @@ public class Client {
 		
 		sheep.setFriend(friend);
 		
-		Sheep sheep2 = (Sheep) sheep.clone();
+//		Sheep sheep2 = (Sheep) sheep.deepCloneWithReflect();
+		Sheep sheep2 = (Sheep) sheep.deepCloneWithSerialize();
 		
 		System.out.println(sheep.getFriend() == sheep2.getFriend()); // true(淺), false(深)
 		System.out.println(sheep2.getFriend());
+		
 	}
 
 }
